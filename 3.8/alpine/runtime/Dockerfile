@@ -1,4 +1,8 @@
 FROM alpine:3.8
+WORKDIR /app
+ARG EXE=/app
+ENV env_EXE=$EXE
+
 RUN echo http://mirror.yandex.ru/mirrors/alpine/v3.8/main > /etc/apk/repositories; \
     echo http://mirror.yandex.ru/mirrors/alpine/v3.8/community >> /etc/apk/repositories
 
@@ -47,7 +51,7 @@ RUN set -e \
     && rm -fr /etc/periodic \
     #
     # Make freshly built binary executable by any user
-    && chmod +x $EXE \
+    && chmod +x $env_EXE \
     #
     # Add a user 'appuser' without privileges in group 'appgroup'
     && addgroup -S appgroup && adduser -S -h /app -G appgroup appuser \
