@@ -46,9 +46,6 @@ RUN set -e \
     && rm -fr /etc/crontabs \
     && rm -fr /etc/periodic \
     #
-    # Make freshly built binary executable by any user
-    && chmod +x $EXE \
-    #
     # Add a user 'appuser' without privileges in group 'appgroup'
     && addgroup -S appgroup && adduser -S -h /app -G appgroup appuser \
     #
@@ -140,4 +137,5 @@ USER appuser
 #WORKDIR /app
 #COPY --from=publish /app .
 #ENV EXE=/app/<your-executable-here>
+#SET chmod +x $EXE \
 #ENTRYPOINT $EXE
