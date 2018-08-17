@@ -1,7 +1,4 @@
 FROM alpine:3.8
-WORKDIR /app
-ARG EXE=/app
-ENV env_EXE=$EXE
 
 RUN echo http://mirror.yandex.ru/mirrors/alpine/v3.8/main > /etc/apk/repositories; \
     echo http://mirror.yandex.ru/mirrors/alpine/v3.8/community >> /etc/apk/repositories
@@ -50,9 +47,6 @@ RUN set -e \
     && rm -fr /etc/crontabs \
     && rm -fr /etc/periodic \
     #
-    # Make freshly built binary executable by any user
-    && chmod +x $env_EXE \
-    #
     # Add a user 'appuser' without privileges in group 'appgroup'
     && addgroup -S appgroup && adduser -S -h /app -G appgroup appuser \
     #
@@ -95,7 +89,9 @@ RUN set -e \
     && find $sysdirs -xdev \( \
      -name hexdump -o \
      -name chgrp -o \
-     -name chmod -o \
+     # don't delte chmod here because it is needed to make the application an executable file. 
+     # chmod should be deleted when this is done - see instructions chapter below.
+     #-name chmod -o \
      -name chown -o \
      -name ln -o \
      -name od -o \
@@ -131,22 +127,8 @@ RUN set -e \
     # Remove broken symlinks (because we removed the targets above):
     && find $sysdirs -xdev -type l -exec test ! -e {} \; -delete      
 
-USER appuser
-
 # Instructions:
 # 
-# When using this image the environment variable EXE has to be passed with the full qualified path to the application (including the executable).
-# Passing the environment variable can be done using docker compose. For the sake of an example 
-# let web be the service then the following code snippet defines the environment variable:
-#
-# web  
-#   environment:
-#     - EXE=/app/mygreatapp
-# Using the docker cli the command looks like this:
-# 
-#   docker-compose run -e EXE=/app/mygreatapp web ...
-# For further details see here: https://docs.docker.com/compose/environment-variables/#pass-environment-variables-to-containers
-#
 # Configure Kestrel web server to bind to port 8081 when present
 #
 # ENV ASPNETCORE_URLS=http://+:8081 \
@@ -158,5 +140,13 @@ USER appuser
 # EXPOSE 8081
 # WORKDIR /app
 # COPY --from=publish /app .
+#
+# Make freshly built binary executable by user `appuser`
+# RUN chmod +x /app/mygreatapp \
+#    && find $sysdirs -xdev \( \
+#       -name chmod -o \
+#        \) -delete \
+#
+# USER appuser
 # ENTRYPOINT $EXE
 #

@@ -4,18 +4,6 @@ Additionally it hardens the alpine image by removing things that could be used a
 
 # Instructions:
  
-When using this image the environment variable EXE has to be passed with the full qualified path to the application (including the executable).
-Passing the environment variable can be done using docker compose. For the sake of an example 
-let web be the service then the following code snippet defines the environment variable:
-
-  web  
-    environment:
-      - EXE=/app/mygreatapp
-  Using the docker cli the command looks like this:
- 
-  docker-compose run -e EXE=/app/mygreatapp web ...
- For further details see here: https://docs.docker.com/compose/environment-variables/#pass-environment-variables-to-containers
-
  Configure Kestrel web server to bind to port 8081 when present
 
  ENV ASPNETCORE_URLS=http://+:8081 \
@@ -27,6 +15,15 @@ let web be the service then the following code snippet defines the environment v
  EXPOSE 8081
  WORKDIR /app
  COPY --from=publish /app .
+
+ Make freshly built binary executable by user `appuser` and delete the chmod command afterwards.
+ RUN chmod +x /app/mygreatapp \
+    && find $sysdirs -xdev \( \
+       -name chmod -o \
+        \) -delete \
+
+ USER appuser
+
  ENTRYPOINT $EXE
 
 # Credits
