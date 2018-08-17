@@ -127,26 +127,31 @@ RUN set -e \
     # Remove broken symlinks (because we removed the targets above):
     && find $sysdirs -xdev -type l -exec test ! -e {} \; -delete      
 
-# Instructions:
+# Example usage:
 # 
-# Configure Kestrel web server to bind to port 8081 when present
+# FROM lohrer/aspnetcore-alpine:alpine3.8 as base
 #
-# ENV ASPNETCORE_URLS=http://+:8081 \
-#   # Enable detection of running in a container
-#   DOTNET_RUNNING_IN_CONTAINER=true \
-#   # Set the invariant mode since icu_libs isn't included (see https://github.com/dotnet/announcements/issues/20)
-#   DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
+# Define the port that is exposed by the application
+# ENV PORT=8081
+# Define the name of the application
+# ENV EXE=/MyGreatApp
+# Define the working directory inside the container
+# ENV WD=/app
 #
-# EXPOSE 8081
-# WORKDIR /app
-# COPY --from=publish /app .
+# ENV ASPNETCORE_URLS=http://+:${PORT} \
+#     # Enable detection of running in a container
+#     DOTNET_RUNNING_IN_CONTAINER=true \
+#     # Set the invariant mode since icu_libs isn't included (see [dotnet issue #20](https://github.com/dotnet/announcements/issues/20))
+#     DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
+# EXPOSE ${PORT}
 #
-# Make freshly built binary executable by user `appuser`
-# RUN chmod +x /app/mygreatapp \
-#    && find $sysdirs -xdev \( \
-#       -name chmod -o \
-#        \) -delete \
+# WORKDIR ${WD}
+# COPY --from=publish ${WD} .
+# RUN chmod +x ${WD}${EXE} \
+#     && find $sysdirs -xdev \( \
+#        -name chmod -o \
+#        \) -delete
 #
 # USER appuser
-# ENTRYPOINT $EXE
+# ENTRYPOINT ${WD}${EXE}
 #

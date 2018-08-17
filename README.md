@@ -11,7 +11,7 @@ This image can be used like this, adapt if required:
     # Define the port that is exposed by the application
     ENV PORT=8081
     # Define the name of the application
-    ENV EXE=/StockTickR
+    ENV EXE=/MyGreatApp
     # Define the working directory inside the container 
     ENV WD=/app
 
