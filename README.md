@@ -1,30 +1,49 @@
-# Asp.net core apps on alpine 3.8
-This repository contains a dockerfile template that is built for a self-contained .Net Core application using alpine 3.8 as a base image.
-Additionally it hardens the alpine image by removing things that could be used as an attack surface on os level.
+# Intent 
 
-# Instructions:
- 
- Configure Kestrel web server to bind to port 8081 when present
+The docker images in this repository are intended for self-contained asp.net core 2.1 (or later) applications that are build with rid [alpine.3.7-x64 or alpine-x64](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog) . This means the container does not contain a asp.net core runtime of any kind only the libraries that are needed by self-contained applications. 
 
- ENV ASPNETCORE_URLS=http://+:8081 \
-   # Enable detection of running in a container
-   DOTNET_RUNNING_IN_CONTAINER=true \
-   # Set the invariant mode since icu_libs isn't included (see https://github.com/dotnet/announcements/issues/20)
-   DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
+# Usage 
 
- EXPOSE 8081
- WORKDIR /app
- COPY --from=publish /app .
+This image can be used like this, adapt if required:
 
- Make freshly built binary executable by user `appuser` and delete the chmod command afterwards.
- RUN chmod +x /app/mygreatapp \
-    && find $sysdirs -xdev \( \
-       -name chmod -o \
-        \) -delete \
+    FROM lohrer/aspnetcore-alpine:alpine3.8
+    
+    # Define the port that is exposed by the application
+    ENV PORT=8081
+    # Define the name of the application
+    ENV EXE=/StockTickR
+    # Define the working directory inside the container 
+    ENV WD=/app
 
- USER appuser
+    ENV ASPNETCORE_URLS=http://+:${PORT} \
+        # Enable detection of running in a container
+        DOTNET_RUNNING_IN_CONTAINER=true \
+        # Set the invariant mode since icu_libs isn't included (see [dotnet issue #20](https://github.com/dotnet/announcements/issues/20))
+        DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=true
+     EXPOSE ${PORT}
 
- ENTRYPOINT $EXE
+     WORKDIR ${WD}
+    COPY --from=publish ${WD} .
+    RUN chmod +x ${WD}${EXE} \
+        && find $sysdirs -xdev \( \
+           -name chmod -o \
+            \) -delete
+
+    USER appuser
+    ENTRYPOINT ${WD}${EXE}
+
+
+For more information about these images and their history, please see the Dockerfile. These images are updated via pull requests to the [AddonContributor/aspnet-docker GitHub repo](https://github.com/AddonContributor/aspnet-docker).
+
+# Optimizing Container Size
+
+Using package [Microsoft.Packaging.Tools.Trimming](https://www.nuget.org/packages/Microsoft.Packaging.Tools.Trimming/1.1.0-preview1-25818-0) together with the csproj-settings:
+     
+    <PropertyGroup>
+        <TrimUnusedDependencies>true</TrimUnusedDependencies>
+        <RootPackageReference>false</RootPackageReference> 
+        ... 
+   </PropertyGroup>
 
 # Credits
 The ideas for hardening alpine were taken from https://gist.github.com/kost/017e95aa24f454f77a37
