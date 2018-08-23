@@ -14,7 +14,8 @@ RUN apk update \
         libstdc++ \
         tzdata \
         userspace-rcu \
-        zlib
+        zlib \
+        icu-libs
 
 # set -e: Exit immediately if a command exits with a non-zero status.
 RUN set -e \
