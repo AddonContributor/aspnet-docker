@@ -133,6 +133,15 @@ RUN set -e \
 # 
 # FROM lohrer/aspnetcore-alpine:alpine3.8 as base
 #
+# COPY *.csproj ./
+# COPY NuGet.config ./
+# RUN dotnet restore -nowarn:nu1701 -r alpine.3.7-x64
+# COPY . .
+# RUN dotnet build -c Release -o /app -r alpine.3.7-x64 --no-restore
+# 
+# FROM build AS publish
+# RUN dotnet publish -c Release -o /app -r alpine.3.7-x64 --no-restore
+#
 # Define the port that is exposed by the application
 # ENV PORT=8081
 # Define the name of the application

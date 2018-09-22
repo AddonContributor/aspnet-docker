@@ -130,6 +130,15 @@ RUN echo http://mirror.yandex.ru/mirrors/alpine/v3.8/main > /etc/apk/repositorie
 # 
 # FROM lohrer/aspnetcore-alpine:alpine3.8 as base
 #
+# COPY *.csproj ./
+# COPY NuGet.config ./
+# RUN dotnet restore -nowarn:nu1701 -r alpine.3.7-x64
+# COPY . .
+# RUN dotnet build -c Release -o /app -r alpine.3.7-x64 --no-restore
+# 
+# FROM build AS publish
+# RUN dotnet publish -c Release -o /app -r alpine.3.7-x64 --no-restore
+#
 # Define the port that is exposed by the application
 # ENV PORT=8081
 # Define the name of the application
@@ -141,6 +150,7 @@ RUN echo http://mirror.yandex.ru/mirrors/alpine/v3.8/main > /etc/apk/repositorie
 #     # Enable detection of running in a container
 #     DOTNET_RUNNING_IN_CONTAINER=true \
 #     DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+#
 # EXPOSE ${PORT}
 #
 # WORKDIR ${WD}
